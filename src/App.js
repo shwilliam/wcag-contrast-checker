@@ -1,37 +1,91 @@
 import React, {useState, useMemo} from 'react'
 import Color from 'color'
 
-const PreviewText = () => (
-  <section aria-hidden>
-    <p className="preview-text">The quick brown fox</p>
-    <p className="preview-text -bold">The quick brown fox</p>
-    <p className="preview-text -large">The quick brown fox</p>
+const PreviewLink = ({color, children}) => (
+  <a
+    style={{color}}
+    href="https://www.colorhexa.com/a52a2a"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    {children}
+  </a>
+)
+
+const COLORS = {
+  pass: 'lightgreen',
+  fail: 'grey',
+}
+
+const Rating = ({
+  isAA = false,
+  isAAA = false,
+  hasAAA = true,
+  children,
+  ...props
+}) => (
+  <div className="rating-container" {...props}>
+    <p className="rating" style={{color: isAA ? COLORS.pass : COLORS.fail}}>
+      AA
+      {hasAAA && (
+        <span style={{color: isAAA ? COLORS.pass : COLORS.fail}}>A</span>
+      )}
+    </p>
+    <p className="rating-label">{children}</p>
+  </div>
+)
+const PreviewText = ({fg, link}) => (
+  <section aria-hidden style={{color: fg}}>
+    <p className="preview-text preview-font">
+      The quick <PreviewLink color={link}>brown</PreviewLink> fox
+    </p>
+
+    <p className="preview-text preview-font -bold">
+      The quick <PreviewLink color={link}>brown</PreviewLink> fox
+    </p>
+
+    <p className="preview-text preview-font -large">
+      The quick <PreviewLink color={link}>brown</PreviewLink> fox
+    </p>
+
     <input
       type="text"
-      className="preview-text -input"
+      className="preview-font preview-text -input"
       defaultValue="The quick brown fox"
+      placeholder="The quick brown fox"
+      style={{borderColor: fg}}
     />
   </section>
 )
 
 export const App = () => {
-  const [colors, setColors] = useState(['#fff', '#222'])
+  const [colors, setColors] = useState({fg: '#222', bg: '#ffe', link: 'green'})
 
   const contrastRatio = useMemo(() => {
     let contrast
     try {
-      contrast = Color(colors[0]).contrast(Color(colors[1]))
+      contrast = Color(colors.bg).contrast(Color(colors.fg))
     } catch (error) {
       return undefined
     }
     return contrast.toFixed(2)
   }, [colors])
 
+  const linkContrastRatio = useMemo(() => {
+    let contrast
+    try {
+      contrast = Color(colors.fg).contrast(Color(colors.link))
+    } catch (error) {
+      return undefined
+    }
+    return contrast.toFixed(2)
+  }, [colors.link, colors.fg])
+
   const handleColorChange = e => {
     e.persist()
     setColors(c => {
-      const colors = [...c]
-      colors[e.target.name.slice(-1) - 1] = e.target.value
+      const colors = {...c}
+      colors[e.target.name.split('-')[1]] = e.target.value
       return colors
     })
   }
@@ -43,55 +97,83 @@ export const App = () => {
   const isAAA = useMemo(() => contrastRatio > 7, [contrastRatio])
   const isAAALarge = useMemo(() => contrastRatio > 4.5, [contrastRatio])
   const isUI = useMemo(() => contrastRatio > 3, [contrastRatio])
+  const isLink = useMemo(() => linkContrastRatio > 3, [linkContrastRatio])
 
   return (
-    <>
-      <header className="header">
+    <div className="layout">
+      <header className="inputs">
         <h1 className="title">WCAG Contrast Checker</h1>
 
-        {contrastRatio && (
-          <section className="contrast-container">
-            <p className="contrast">{contrastRatio}</p>
-
-            <>
-              <p>{isAA ? '✅' : '❌'} AA</p>
-              <p>{isAALarge ? '✅' : '❌'} AA large</p>
-              <p>{isAAA ? '✅' : '❌'} AAA</p>
-              <p>{isAAALarge ? '✅' : '❌'} AAA large</p>
-              <p>{isUI ? '✅' : '❌'} UI</p>
-            </>
-          </section>
-        )}
+        <section className="inputs-container">
+          <label className="label">
+            Background color:
+            <input
+              className="input"
+              value={colors.bg}
+              onChange={handleColorChange}
+              name="color-bg"
+              placeholder="#222"
+              type="text"
+            />
+          </label>
+          <label className="label">
+            Foreground color:
+            <input
+              className="input"
+              value={colors.fg}
+              onChange={handleColorChange}
+              name="color-fg"
+              placeholder="#fff"
+              type="text"
+            />
+          </label>
+          <label className="label">
+            Link color:
+            <input
+              className="input"
+              value={colors.link}
+              onChange={handleColorChange}
+              name="color-link"
+              placeholder="blue"
+              type="text"
+            />
+          </label>
+        </section>
       </header>
 
-      <main className="columns">
-        <section
-          className="column"
-          style={{backgroundColor: colors[0], color: colors[1]}}
-        >
-          <PreviewText />
+      <section
+        className="contrast"
+        style={{backgroundColor: colors.bg, color: colors.fg}}
+      >
+        <p className="contrast-output">
+          {contrastRatio ? contrastRatio : '0.00'}
+        </p>
+
+        <Rating isAA={isAA} isAAA={isAAA}>
+          Text
+        </Rating>
+
+        <Rating isAA={isAALarge} isAAA={isAAALarge}>
+          Large text
+        </Rating>
+
+        <Rating isAA={isUI} hasAAA={false}>
           <input
-            value={colors[0]}
-            onChange={handleColorChange}
-            name="color-1"
-            placeholder="#fff"
             type="text"
+            className="rating-label -input"
+            defaultValue="UI"
+            placeholder="UI"
           />
-        </section>
-        <section
-          className="column"
-          style={{backgroundColor: colors[1], color: colors[0]}}
-        >
-          <PreviewText />
-          <input
-            value={colors[1]}
-            onChange={handleColorChange}
-            name="color-2"
-            placeholder="#222"
-            type="text"
-          />
-        </section>
+        </Rating>
+
+        <Rating isAA={isLink} hasAAA={false} style={{color: colors.link}}>
+          Links
+        </Rating>
+      </section>
+
+      <main className="preview" style={{backgroundColor: colors.bg}}>
+        <PreviewText {...colors} />
       </main>
-    </>
+    </div>
   )
 }

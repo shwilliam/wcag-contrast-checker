@@ -150,24 +150,30 @@ export const App = () => {
         </p>
 
         <Rating isAA={isAA} isAAA={isAAA}>
-          Text
+          <span className="desktop-only">Text</span>
+          <span className="preview-font mobile-only">Text</span>
         </Rating>
 
         <Rating isAA={isAALarge} isAAA={isAAALarge}>
-          Large text
+          <span className="desktop-only">Large text</span>
+          <span className="preview-font -large mobile-only">Large text</span>
         </Rating>
 
         <Rating isAA={isUI} hasAAA={false}>
           <input
             type="text"
-            className="rating-label -input"
+            className="rating-label -input mobile-only"
             defaultValue="UI"
             placeholder="UI"
           />
+          <span className="desktop-only">UI</span>
         </Rating>
 
-        <Rating isAA={isLink} hasAAA={false} style={{color: colors.link}}>
-          Links
+        <Rating isAA={isLink} hasAAA={false}>
+          <span className="desktop-only">Links</span>
+          <span className="mobile-only" style={{color: colors.link}}>
+            Links
+          </span>
         </Rating>
       </section>
 

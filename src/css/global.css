@@ -12,6 +12,10 @@ body,
   height: 100%;
 }
 
+.desktop-only {
+  display: none;
+}
+
 a:not(:hover) {
   text-decoration: none;
 }
@@ -42,7 +46,7 @@ a:not(:hover) {
   display: none;
   font-size: 1.5rem;
   font-weight: 400;
-  margin-bottom: 2rem;
+  margin-bottom: 5vh;
 }
 
 .layout {
@@ -175,6 +179,12 @@ a:not(:hover) {
 }
 
 @media screen and (min-width: 900px) {
+  .mobile-only {
+    display: none;
+  }
+  .desktop-only {
+    display: initial;
+  }
   .title {
     display: block;
   }
